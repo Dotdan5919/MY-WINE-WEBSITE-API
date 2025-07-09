@@ -3,6 +3,7 @@ const connectDB= require('./db');
 const userRoutes=require('./routes/users');
 const User=require('./models/User');
 const jwt= require('jsonwebtoken');
+const crypto= require('crypto');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
@@ -18,6 +19,12 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
+const generateRefreshToken=()=>{
+
+
+return crypto.randomBytes(64).toString('hex');
+
+}
 
 const authenticateToken=(req,res,next)=>{
 
@@ -97,13 +104,22 @@ $or:[{email},{username}]
         const user=new User({username,email,password,role:role ||'admin'});
 
 
-        await user.save();
+       
 
 
         const token=generateToken(user.id);
+        const refreshToken=generateRefreshToken();
+
+        user.refreshTokens.push({
+            token:refreshToken,
+            createdAt:new Date()
 
 
-        res.status(201).json({message:'User registered Successfully',user:user.toAuthJSON(),token});
+        });
+         await user.save();
+
+
+        res.status(201).json({message:'User registered Successfully',user:user.toAuthJSON(),token, refreshToken });
 
 
 
@@ -168,12 +184,22 @@ $or:[{email},{username:email}]
 
     const token=generateToken(user.id);
 
+    const refreshToken=generateRefreshToken();
+    user.refreshTokens.push({
+        token:refreshToken,
+        createdAt:new Date()
+
+
+    });
+
+    await user.save();
     res.status(200).json({
 
         success:true,
         message:'Login successful',
         user: user.toAuthJSON,
-        token
+        token,
+        refreshToken
 
 
 
