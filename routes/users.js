@@ -1,17 +1,25 @@
 const express=require('express');
 const User= require('../models/User');
 const { findOneAndDelete } = require('../models/User');
+const   bcrypt  = require('bcryptjs');
 const router=express.Router();
 
-// get all users
+
+// get all users (for admin only)
 router.get('/',async(req,res)=>{
 
 try{
-
+// if admin is loggedin
+    if(req.user.role==="admin"){
     const users=await User.find();
     res.json(users);
 
+}
+else{
 
+
+    res.status(403).json({error:"Path Forbidden"});
+}
 
 }
 catch(error){
@@ -61,6 +69,7 @@ router.delete('/:id',async(req,res)=>{
 
 try{
 
+    if(req.user.role==="admin"){ 
     const user=await User.findByIdAndDelete(req.params.id);
 
     if(!user)
@@ -72,7 +81,12 @@ try{
 
     res.json({message:'User deleted successfully'});
 
+}
 
+else{
+
+    res.status(403).json({error:"Forbidden"});
+}
 
 
 
@@ -101,10 +115,11 @@ router.post('/:id', async (req,res)=>
 
     try{
 
+    //    not req.user(this is from the token) req.params (this is from the filled form)
 
         const user= await User.findById(req.params.id);
-
-
+// if the user that is logged in is the same as the user that wants to update
+ if(req.user.id===user.id){
 
         if(!user)
         {
@@ -116,12 +131,27 @@ router.post('/:id', async (req,res)=>
 
         else{
 
+         if(!req.body.password)
+         {
 
-            object.assign(user,req.body);
+
+             user.set(req.body);
             await user.save();
              res.json({message:'User updated'},user);
+         }
+         
+           res.status(403).json({message:"forbidden"});
+           
+           
+           
         }
-       
+    }
+    else{
+        
+        res.status(403).json({message:"forbidden"});
+
+        
+       }
 
 
 
@@ -140,6 +170,62 @@ router.post('/:id', async (req,res)=>
 
 
 })
+
+
+// update password
+
+router.post('/password/:id',async(req,res)=>{
+
+try{
+
+    
+    const user=await User.findById(req.params.id).select('+password');
+if(req.user.id=== user.id){
+
+    if(!user)
+    {
+
+        res.status(404).json({error:"User Not found"});
+    }
+
+const isPasswordValid=await bcrypt.compare(req.body.oldpassword,user.password);
+
+if(!isPasswordValid){
+
+res.status(401).json({error:"Password Incorrect"});
+
+}
+
+user.password=req.body.newpassword;
+
+await user.save();
+
+res.json({message:"Password Changed"});
+    
+
+}
+
+else{
+
+
+    res.status(403).json({error:"Path Forbidden"});
+}
+
+
+
+
+
+}
+catch(error)
+{
+
+
+
+    res.status(505).json({error:error.message});
+}
+
+
+});
 
 //find by id
 
