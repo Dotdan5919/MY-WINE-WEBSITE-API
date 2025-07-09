@@ -38,7 +38,8 @@ const userSchema = new mongoose.Schema( {
 
             type:String,
             minlenght:6,
-            select:false
+            select:false,
+            require:true
 
 
         },
