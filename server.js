@@ -1,6 +1,8 @@
 const express=require('express');
 const connectDB= require('./db');
 const userRoutes=require('./routes/users');
+const adminRoutes=require('./routes/admin');
+
 const User=require('./models/User');
 const jwt= require('jsonwebtoken');
 const crypto= require('crypto');
@@ -26,7 +28,7 @@ return crypto.randomBytes(64).toString('hex');
 
 }
 
-const authenticateToken=(req,res,next)=>{
+const userauthenticateToken=(req,res,next)=>{
 
 
     const authHeader=req.headers['authorization'];
@@ -59,6 +61,43 @@ const authenticateToken=(req,res,next)=>{
 
 };
 
+
+const adminauthenticateToken=(req,res,next)=>{
+
+
+    const authHeader=req.headers['authorization'];
+    const token=authHeader && authHeader.split(' ')[1];
+
+    if(!token){
+
+
+        return res.status(401).json({error:'Access Token required'});
+    }
+
+    jwt.verify(token,JWTSecret,(err,user)=>
+    {
+
+        if(err){
+
+
+            return res.status(403).json({error:'Invalid or expired token'})
+
+        }
+
+        if(user.role!="admin"){
+            return res.status(403).json({error:'Admin access required'})
+        }
+        req.admin=user;
+        next();
+
+    }
+    
+    )
+
+
+
+
+};
 const generateToken=(userId)=>{
 
 return jwt.sign(
@@ -221,7 +260,10 @@ res.status(500).json({error:error.message});
 
 
 
-app.use('/api/users',authenticateToken, userRoutes);
+app.use('/api/user',userauthenticateToken, userRoutes);
+
+app.use('/api/admin',adminauthenticateToken,adminRoutes);
+
 
 app.get('/', (req, res) => {
     res.send('Express + MongoDB connected!');
