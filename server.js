@@ -22,7 +22,7 @@ app.use(express.urlencoded({extended:true}));
 const authenticateToken=(req,res,next)=>{
 
 
-    const authHeader=req.header['authorization'];
+    const authHeader=req.headers['authorization'];
     const token=authHeader && authHeader.split(' ')[1];
 
     if(!token){
@@ -195,7 +195,7 @@ res.status(500).json({error:error.message});
 
 
 
-// app.use('/api/users', userRoutes);
+app.use('/api/users',authenticateToken, userRoutes);
 
 app.get('/', (req, res) => {
     res.send('Express + MongoDB connected!');
