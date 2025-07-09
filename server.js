@@ -2,8 +2,11 @@ const express=require('express');
 const connectDB= require('./db');
 const userRoutes=require('./routes/users');
 const adminRoutes=require('./routes/admin');
+const reportRoutes=require('./routes/reports');
+
 
 const User=require('./models/User');
+const Report=require('./models/Reports');
 const jwt= require('jsonwebtoken');
 const crypto= require('crypto');
 const bcrypt = require('bcryptjs');
@@ -68,6 +71,8 @@ const adminauthenticateToken=(req,res,next)=>{
     const authHeader=req.headers['authorization'];
     const token=authHeader && authHeader.split(' ')[1];
 
+    
+
     if(!token){
 
 
@@ -77,6 +82,8 @@ const adminauthenticateToken=(req,res,next)=>{
     jwt.verify(token,JWTSecret,(err,user)=>
     {
 
+       
+        
         if(err){
 
 
@@ -84,7 +91,8 @@ const adminauthenticateToken=(req,res,next)=>{
 
         }
 
-        if(user.role!="admin"){
+        if(user.role!='admin'){
+            
             return res.status(403).json({error:'Admin access required'})
         }
         req.admin=user;
@@ -98,10 +106,10 @@ const adminauthenticateToken=(req,res,next)=>{
 
 
 };
-const generateToken=(userId)=>{
+const generateToken=(userId,role)=>{
 
 return jwt.sign(
-{id:userId},
+{id:userId,role},
 JWTSecret,
 {expiresIn:'24h'}
 
@@ -146,7 +154,7 @@ $or:[{email},{username}]
        
 
 
-        const token=generateToken(user.id);
+        const token=generateToken(user.id,user.role);
         const refreshToken=generateRefreshToken();
 
         user.refreshTokens.push({
@@ -221,7 +229,7 @@ $or:[{email},{username:email}]
     }
 
 
-    const token=generateToken(user.id);
+    const token=generateToken(user.id,user.role);
 
     const refreshToken=generateRefreshToken();
     user.refreshTokens.push({
@@ -263,6 +271,8 @@ res.status(500).json({error:error.message});
 app.use('/api/user',userauthenticateToken, userRoutes);
 
 app.use('/api/admin',adminauthenticateToken, adminRoutes);
+
+app.use('/api/reports',adminauthenticateToken,reportRoutes);
 
 
 
