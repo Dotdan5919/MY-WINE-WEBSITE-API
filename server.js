@@ -262,7 +262,72 @@ res.status(500).json({error:error.message});
 
 app.use('/api/user',userauthenticateToken, userRoutes);
 
-app.use('/api/admin',adminauthenticateToken,adminRoutes);
+app.use('/api/admin',adminauthenticateToken, adminRoutes);
+
+
+
+
+// Token refresh endpoint
+app.post('/api/refresh-token', async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+
+        if (!refreshToken) {
+            return res.status(401).json({ error: 'Refresh token required' });
+        }
+
+        const user = await User.findOne({
+            'refreshTokens.token': refreshToken
+        });
+
+        if (!user) {
+            return res.status(403).json({ error: 'Invalid refresh token' });
+        }
+
+        // Remove old refresh token
+        user.refreshTokens = user.refreshTokens.filter(rt => rt.token !== refreshToken);
+
+        // Generate new tokens
+        const newToken = generateToken(user.id, user.role);
+        const newRefreshToken = generateRefreshToken();
+
+        user.refreshTokens.push({
+            token: newRefreshToken,
+            createdAt: new Date()
+        });
+
+        await user.save();
+
+        res.json({
+            token: newToken,
+            refreshToken: newRefreshToken
+        });
+
+    } catch (error) {
+        console.error('Token refresh error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Logout endpoint
+app.post('/api/logout', userauthenticateToken, async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        const user = await User.findById(req.user.id);
+
+        if (refreshToken) {
+            user.refreshTokens = user.refreshTokens.filter(rt => rt.token !== refreshToken);
+            await user.save();
+        }
+
+        res.json({ message: 'Logged out successfully' });
+
+    } catch (error) {
+        console.error('Logout error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 
 app.get('/', (req, res) => {
