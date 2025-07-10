@@ -1,16 +1,24 @@
 const express=require('express');
 const connectDB= require('./db');
+
+require('dotenv').config();
+
+// routes
 const userRoutes=require('./routes/users');
 const adminRoutes=require('./routes/admin');
 const reportRoutes=require('./routes/reports');
+const blogRoutes=require('./routes/blogs');
 
-
+// models
 const User=require('./models/User');
+const Blog=require('./models/Blog');
 const Report=require('./models/Reports');
+
+
 const jwt= require('jsonwebtoken');
 const crypto= require('crypto');
 const bcrypt = require('bcryptjs');
-require('dotenv').config();
+
 
 const app=express();
 const PORT=process.env.PORT ||3000;
@@ -267,12 +275,40 @@ res.status(500).json({error:error.message});
 });
 
 
+app.get('/api/blogs',async(req,res)=>{
+
+
+try{
+
+
+    const blog=await Blog.find();
+    if(!blog){
+
+
+        res.status(404).json({error:"File not found"});
+    }
+
+    res.json(blog);
+}
+
+catch(error){
+
+
+
+
+    res.status(500).json({error:error.message});
+}
+
+});
+
 
 app.use('/api/user',userauthenticateToken, userRoutes);
 
 app.use('/api/admin',adminauthenticateToken, adminRoutes);
 
 app.use('/api/reports',adminauthenticateToken,reportRoutes);
+
+app.use('/api/blogs',adminauthenticateToken, blogRoutes);
 
 
 
