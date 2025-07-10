@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
 // File filter (optional)
 const fileFilter = (req, file, cb) => {
   // Allow only specific file types
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+  const allowedTypes = [ 'application/docx', 'application/pdf'];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -50,7 +50,7 @@ const upload = multer({
 
 
 
-
+// get
 router.get('/',async(req,res)=>{
 
 
@@ -73,7 +73,9 @@ catch(error){
 
 });
 
-router.post('/',upload.single('img'),async(req,res)=>{
+
+//upload report
+router.post('/',upload.single('pdfreport'),async(req,res)=>{
 
     try{
 
@@ -117,6 +119,48 @@ catch(error){
 
 
 );
+
+
+
+// delete report
+router.delete('/delete/:id',async(req,res)=>
+{
+
+
+  try{
+  const report=await Report.findById(req.params.id);
+
+  if(!report)
+  {
+
+    res.status(401).json({error:"Report not found"});
+
+  }
+
+  
+
+  }
+
+
+  catch(error)
+  {
+
+
+
+
+  }
+
+
+
+
+
+
+})
+
+
+
+
+
 
 
 
