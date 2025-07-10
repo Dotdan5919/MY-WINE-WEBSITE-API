@@ -188,6 +188,88 @@ res.json({message:"Successfully Deleted"});
 
 
 
+//update report
+
+router.post('/update/:id',upload.single('pdfreport'),async(req,res)=>{
+
+
+try{
+const {name,description}=req.body;
+
+
+
+
+const updateData={}
+if(name){
+  updateData.name=name;
+}
+if(description){
+
+updateData.description=description;
+
+}
+
+
+
+
+
+if(req.file)
+{
+
+const file=await Report.findById(req.params.id);
+
+if(file && file.url)
+{
+
+const oldFilePath= path.join('uploads',file.url);
+
+fs.unlink(oldFilePath,(err)=>{
+
+if(err) console.error('Error deleting old file',err);
+
+});
+
+
+}
+
+
+updateData.url=req.file.filename;
+
+}
+
+
+
+const UpdateReport=Report.findByIdAndUpdate(req.params.id,updateData,{new:true,runValidators:true});
+
+
+if(!UpdateReport){
+
+
+  return res.status(404).json({error:"Report not found"});
+}
+
+
+
+res.json({message:"Report Updated Successfully"});
+
+
+
+
+
+}
+catch(error){
+
+res.status(500).json({error:error.message});
+
+
+}
+
+
+
+});
+
+
+
 
 
 
