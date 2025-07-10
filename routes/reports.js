@@ -5,7 +5,9 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const router=express.Router();
+const { promisify } = require('util');
 
+const unlinkAsync = promisify(fs.unlink);
 
 
 
@@ -137,7 +139,33 @@ router.delete('/delete/:id',async(req,res)=>
 
   }
 
-  
+
+if(report.url){
+  const filePath=path.join('uploads',report.url);
+  try{
+
+    await unlinkAsync(filePath);
+    console.log('File deleted: ${filePath}');
+
+
+
+
+  }
+
+  catch(error){
+
+
+
+    console.error('Error deleting file',error);
+  }
+
+  }
+
+
+const deleteReport=await Report.findByIdAndDelete(req.params.id);
+
+res.json({message:"Successfully Deleted"});
+
 
   }
 
@@ -147,6 +175,7 @@ router.delete('/delete/:id',async(req,res)=>
 
 
 
+    res.status(505).json({error:error.message});
 
   }
 
@@ -155,7 +184,7 @@ router.delete('/delete/:id',async(req,res)=>
 
 
 
-})
+});
 
 
 
