@@ -27,7 +27,32 @@ catch(error){
 
 
 
-})
+});
+
+router.post('/',async(req,res)=>{
+
+    try{
+
+const {name,description,url}=req.body;
+
+// const report=new Report(req.body);
+
+await report.save();
+res.json({message:"Report Created"});
+
+}
+catch(error){
+
+
+
+    res.status(500).json({error:error.message});
+}
+
+}
+
+
+
+);
 
 
 
