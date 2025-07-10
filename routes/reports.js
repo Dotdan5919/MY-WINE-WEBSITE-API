@@ -239,7 +239,7 @@ updateData.url=req.file.filename;
 
 
 
-const UpdateReport=Report.findByIdAndUpdate(req.params.id,updateData,{new:true,runValidators:true});
+const UpdateReport=await Report.findByIdAndUpdate(req.params.id,updateData,{new:true,runValidators:true});
 
 
 if(!UpdateReport){
@@ -267,6 +267,11 @@ res.status(500).json({error:error.message});
 
 
 });
+
+
+
+
+
 
 
 
