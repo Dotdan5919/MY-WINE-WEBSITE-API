@@ -32,7 +32,7 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter (optional)
+// File filter
 const fileFilter = (req, file, cb) => {
   // Allow only specific file types
   const allowedTypes = [ 'image/jpeg','image/png','image/gif'];
@@ -52,7 +52,7 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-
+// create blog
 
 router.post('/', upload.single('featured_image'), async(req,res)=>{
 
@@ -97,6 +97,160 @@ router.post('/', upload.single('featured_image'), async(req,res)=>{
 
 
 })
+
+
+
+// edit blog
+
+
+router.post('/update/:id',upload.single('featured_image'),async(req,res)=>{
+
+
+try{
+
+   
+    
+    const {title,content}=req.body;
+
+
+    const updater={}
+
+    if(title){
+updater.title=title;
+    }
+
+    if(content){
+
+
+        updater.content=content;
+    }
+
+
+
+    if(req.file)
+    {
+    
+    const file=await Blog.findById(req.params.id);
+    
+    if(file && file.featured_image)
+    {
+    
+    const oldFilePath= path.join('uploads/images',file.featured_image);
+    
+    fs.unlink(oldFilePath,(err)=>{
+    
+    if(err) console.error('Error deleting old file',err);
+    
+    });
+    
+    
+    }
+    
+    
+    updater.featured_image=req.file.filename;
+    
+    }
+
+
+    const UpdateBlog=await Blog.findByIdAndUpdate(req.params.id,updater,{new:true,runValidators:true});
+
+
+
+    if(!UpdateBlog){
+
+
+        return res.status(404).json({error:"Blog not found"});
+    }
+
+    await UpdateBlog.save();
+
+    res.json({message:"User Updated"},UpdateBlog);
+
+
+
+
+
+}
+
+catch(error)
+{
+
+
+
+    res.status(500).json({errror:error.message});
+}
+
+
+
+
+
+})
+
+
+
+
+// delete blog
+
+
+router.delete('/delete/:id',async(req,res)=>{
+
+
+
+try{
+
+const blog= await Blog.findById(req.params.id);
+
+if(!blog){
+
+    return res.status(404).json({error:"Blog not found"});
+}
+
+
+if(blog.featured_image)
+{
+
+    const filePath=path.join('uploads/images',blog.featured_image);
+
+    try{
+await unlinkAsync(filePath);
+}
+
+
+catch(error){
+
+
+    console.error('Error deleting file',error);
+
+}
+    
+
+
+}
+
+
+
+    await Blog.findByIdAndDelete(req.params.id);
+
+
+
+    res.json({message:"Successfully Deleted"});
+
+
+}
+
+catch(error){
+
+
+    res.status(500).json({error:error.message});
+
+
+
+}
+
+
+})
+
+
 
 
 module.exports=router;
