@@ -1,25 +1,11 @@
 const express=require('express');
 const connectDB= require('./db');
 
-const mongoose=require('mongoose');
+
 require('dotenv').config();
 
 
-const Report=require('./models/Reports');
-// test
-// Clear the model cache (for development only)
-if (process.env.NODE_ENV !== 'production') {
-  delete mongoose.models.Report;
-  delete mongoose.modelSchemas.Report;
-}
 
- // This will now use the updated schema
-const multer = require('multer');
-// ... rest of your code
-
-
-
-// test
 
 // routes
 const userRoutes=require('./routes/users');
@@ -30,6 +16,7 @@ const blogRoutes=require('./routes/blogs');
 // models
 const User=require('./models/User');
 const Blog=require('./models/Blog');
+const Report=require('./models/Reports');
 
 
 const jwt= require('jsonwebtoken');
