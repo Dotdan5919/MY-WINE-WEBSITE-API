@@ -94,7 +94,13 @@ router.post('/', upload.array('images',3), async(req,res)=>{
 
 
         const{name,description,price,stock,category}=req.body;
+        const duplicateName=await Product.find({name:name});
 
+        if(duplicateName.length>0){
+            console.log(duplicateName);
+
+            return res.status(409).json({error:"Name already exist"});
+        }
 
         if(!req.files || req.files.length===0){
 
@@ -138,154 +144,7 @@ router.post('/', upload.array('images',3), async(req,res)=>{
 
 
 
-})
-
-
-
-// edit blog
-
-
-router.post('/update/:id',upload.single('featured_image'),async(req,res)=>{
-
-
-try{
-
-   
-    
-    const {title,content}=req.body;
-
-
-    const updater={}
-
-    if(title){
-updater.title=title;
-    }
-
-    if(content){
-
-
-        updater.content=content;
-    }
-
-
-
-    if(req.file)
-    {
-    
-    const file=await Blog.findById(req.params.id);
-    
-    if(file && file.featured_image)
-    {
-    
-    const oldFilePath= path.join('uploads/images',file.featured_image);
-    
-    fs.unlink(oldFilePath,(err)=>{
-    
-    if(err) console.error('Error deleting old file',err);
-    
-    });
-    
-    
-    }
-    
-    
-    updater.featured_image=req.file.filename;
-    
-    }
-
-
-    const UpdateBlog=await Blog.findByIdAndUpdate(req.params.id,updater,{new:true,runValidators:true});
-
-
-
-    if(!UpdateBlog){
-
-
-        return res.status(404).json({error:"Blog not found"});
-    }
-
-    await UpdateBlog.save();
-
-    res.json({message:"User Updated"},UpdateBlog);
-
-
-
-
-
-}
-
-catch(error)
-{
-
-
-
-    res.status(500).json({errror:error.message});
-}
-
-
-
-
-
-})
-
-
-//  like blog
-router.post('/like/:id',upload.none(),async(req,res)=>{
-
-try{
-const blog=await Blog.findById(req.params.id);
-
-const adminId=req.admin.id;
-
-if(!blog){
-
-
-
-  return  res.status(404).json({error:"Blog not found"});
-    
-}
-
-
-const alreadyLiked=blog.likers.includes(adminId);
-
-if(alreadyLiked){
-
-
-    blog.likers=blog.likers.filter(id=>!id.equals(adminId));
-    blog.likes-=1;
-    await blog.save();
-
-    res.json({message:"Blog unliked",likes:blog.likes});
-}
-else{
-
-
-    blog.likers.push(adminId);
-    blog.likes +=1;
-    await blog.save();
-
-    res.json({message:"Blog liked",likes:blog.likes});
-}
-
-
-
-
-}
-catch(error){
-    
-    res.status(500).json({error:error.message});
-
-
-
-}
-
-
-
 });
-
-
-
-// delete blog
 
 
 router.delete('/delete/:id',async(req,res)=>{
@@ -294,38 +153,44 @@ router.delete('/delete/:id',async(req,res)=>{
 
 try{
 
-const blog= await Blog.findById(req.params.id);
+const product= await Product.findById(req.params.id);
 
-if(!blog){
+if(!product){
 
-    return res.status(404).json({error:"Blog not found"});
-}
-
-
-if(blog.featured_image)
-{
-
-    const filePath=path.join('uploads/images',blog.featured_image);
-
-    try{
-await unlinkAsync(filePath);
-}
-
-
-catch(error){
-
-
-    console.error('Error deleting file',error);
-
-}
-    
-
-
+    return res.status(404).json({error:"Product not found"});
 }
 
 
 
-    await Blog.findByIdAndDelete(req.params.id);
+
+
+    if(product.images && product.images.length>0){
+
+        const deletePromise=product.images.map(async(imageObj)=>{
+
+        const filePath = path.join('uploads/products', imageObj.url); // Fixed typo: 'producs' -> 'images'
+
+        try{
+
+            await unlinkAsync(filePath);
+        }
+        catch(error){
+
+      console.error(`Error deleting image ${imageObj.url}:`, error);
+          // Don't throw error - continue deleting other images
+        
+
+        }
+await Promise.allSettled(deletePromise);
+
+
+        })
+
+
+
+    }
+
+    await Product.findByIdAndDelete(req.params.id);
 
 
 
