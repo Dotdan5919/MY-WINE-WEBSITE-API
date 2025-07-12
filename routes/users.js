@@ -4,6 +4,7 @@ const { findOneAndDelete } = require('../models/User');
 const   bcrypt  = require('bcryptjs');
 const router=express.Router();
 
+const Blog=require('../models/Blog');
 
 
 
@@ -94,7 +95,7 @@ catch(error)
 
 });
 
-
+// view profile
 router.get('/',async (req,res)=>{
 
 
@@ -116,7 +117,59 @@ res.json(user);
 });
 
 
+// like blog
+router.post('/like/:id',async(req,res)=>{
 
+try{
+const blog=await Blog.findById(req.params.id);
+
+const userId=req.user.id;
+
+if(!blog){
+
+
+
+  return  res.status(404).json({error:"Blog not found"});
+    
+}
+
+
+const alreadyLiked=blog.likers.includes(userId);
+
+if(alreadyLiked){
+
+
+    blog.likers=blog.likers.filter(id=>!id.equals(userId));
+    blog.likes-=1;
+    await blog.save();
+
+    res.json({message:"Blog unliked",likes:blog.likes});
+}
+else{
+
+
+    blog.likers.push(userId);
+    blog.likes +=1;
+    await blog.save();
+
+    res.json({message:"Blog liked",likes:blog.likes});
+}
+
+
+
+
+}
+catch(error){
+    
+    res.status(500).json({error:error.message});
+
+
+
+}
+
+
+
+});
 
 
 

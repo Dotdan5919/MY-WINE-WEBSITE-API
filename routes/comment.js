@@ -1,7 +1,6 @@
 const express=require('express');
 const router=express.Router();
 const Comment= require('../models/Comment');
-// const { findOne } = require('../models/User');
 
 const Blog = require('../models/Blog');
 const multer = require('multer');
@@ -223,6 +222,8 @@ catch(error){
 
 
 });
+
+
 
 
 

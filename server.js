@@ -13,12 +13,15 @@ const adminRoutes=require('./routes/admin');
 const reportRoutes=require('./routes/reports');
 const blogRoutes=require('./routes/blogs');
 const commentRoutes=require('./routes/comment');
+const productRoutes=require('./routes/product');
+
 
 
 // models
 const User=require('./models/User');
 const Blog=require('./models/Blog');
 const Report=require('./models/Reports');
+const Product=require('./models/Product');
 
 
 const jwt= require('jsonwebtoken');
@@ -136,7 +139,7 @@ JWTSecret,
 };
 
 
-
+// routes available for guests
 app.post('/api/register',async(req,res)=>{
 
 
@@ -308,6 +311,41 @@ catch(error){
 });
 
 
+// show all products
+app.get('/api/products',async(req,res)=>{
+
+
+try{
+
+
+    const product=await Product.find();
+
+
+    if(!product){
+
+
+        return res.status(404).json({message:"No product found"});
+    }
+
+    res.json(product);
+
+
+}
+catch(error){
+
+
+    res.status(500).json({error:error.message});
+
+}
+
+});
+
+
+
+
+
+
+
 app.use('/api/user',userauthenticateToken, userRoutes);
 
 app.use('/api/admin',adminauthenticateToken, adminRoutes);
@@ -317,6 +355,8 @@ app.use('/api/reports',adminauthenticateToken,reportRoutes);
 app.use('/api/blogs',adminauthenticateToken, blogRoutes);
 
 app.use('/api/comment',userauthenticateToken,commentRoutes);
+app.use('/api/products',adminauthenticateToken,productRoutes);
+
 
 
 
