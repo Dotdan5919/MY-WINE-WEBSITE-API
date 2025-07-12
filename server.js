@@ -12,6 +12,8 @@ const userRoutes=require('./routes/users');
 const adminRoutes=require('./routes/admin');
 const reportRoutes=require('./routes/reports');
 const blogRoutes=require('./routes/blogs');
+const commentRoutes=require('./routes/comment');
+
 
 // models
 const User=require('./models/User');
@@ -313,6 +315,8 @@ app.use('/api/admin',adminauthenticateToken, adminRoutes);
 app.use('/api/reports',adminauthenticateToken,reportRoutes);
 
 app.use('/api/blogs',adminauthenticateToken, blogRoutes);
+
+app.use('/api/comment',userauthenticateToken,commentRoutes);
 
 
 

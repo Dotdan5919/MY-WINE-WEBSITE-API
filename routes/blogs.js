@@ -1,11 +1,11 @@
 const express=require('express');
+const router=express.Router();
 
 
 const Blog = require('../models/Blog');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const router=express.Router();
 const { promisify } = require('util');
 
 const unlinkAsync = promisify(fs.unlink);
