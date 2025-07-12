@@ -80,7 +80,7 @@ catch(error){
 
 
 });
-
+// create comment
 router.post('/:postId', upload.none(), async(req,res)=>{
 
 
@@ -143,12 +143,14 @@ catch(error){
 });
 
 // update likes(on comment)
-router.post('/updatelikes/:id',upload.none(),async(req,res)=>{
+router.post('/like/:id',upload.none(),async(req,res)=>{
 
 try{
-const like=await Comment.findById(req.params.id);
+const comment=await Comment.findById(req.params.id);
 
-if(!like){
+const userId=req.user.id;
+
+if(!comment){
 
 
 
@@ -157,11 +159,27 @@ if(!like){
 }
 
 
-like.set(like.likes+=req.body);
+const alreadyLiked=comment.likers.includes(userId);
 
-await like.save();
+if(alreadyLiked){
 
-res.json(like);
+
+    comment.likers=comment.likers.filter(id=>!id.equals(userId));
+    comment.likes-=1;
+    await comment.save();
+
+    res.json({message:"Comment unliked",likes:comment.likes});
+}
+else{
+
+
+    comment.likers.push(userId);
+    comment.likes +=1;
+    await comment.save();
+
+    res.json({message:"Comment liked",likes:comment.likes});
+}
+
 
 
 
@@ -178,6 +196,33 @@ catch(error){
 
 });
 
+// delete comment
+
+router.delete('/delete/:id',upload.none(),async(req,res)=>{
+
+try{
+
+
+const comment=await Comment.findByIdAndDelete(req.params.id);
+
+if(!comment){
+
+
+    return res.status(404).json({error:error.message});
+}
+
+res.json({message:"Comment deleted"});
+
+}
+
+catch(error){
+
+
+    res.status(500).json({error:error.message});
+}
+
+
+});
 
 
 

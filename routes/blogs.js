@@ -187,6 +187,60 @@ catch(error)
 })
 
 
+// edit like
+router.post('/like/:id',upload.none(),async(req,res)=>{
+
+try{
+const blog=await Blog.findById(req.params.id);
+
+const adminId=req.admin.id;
+
+if(!blog){
+
+
+
+  return  res.status(404).json({error:"Blog not found"});
+    
+}
+
+
+const alreadyLiked=blog.likers.includes(adminId);
+
+if(alreadyLiked){
+
+
+    blog.likers=blog.likers.filter(id=>!id.equals(adminId));
+    blog.likes-=1;
+    await blog.save();
+
+    res.json({message:"Blog unliked",likes:blog.likes});
+}
+else{
+
+
+    blog.likers.push(adminId);
+    blog.likes +=1;
+    await blog.save();
+
+    res.json({message:"Blog liked",likes:blog.likes});
+}
+
+
+
+
+}
+catch(error){
+    
+    res.status(500).json({error:error.message});
+
+
+
+}
+
+
+
+});
+
 
 
 // delete blog

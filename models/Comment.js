@@ -51,6 +51,12 @@ required:true
     type: Number,
     default: 0
   },
+   likers:[{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:'User'
+  
+     }]
+  ,
    // Timestamps
   created_at: {
     type: Date,

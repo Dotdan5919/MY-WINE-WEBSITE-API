@@ -9,7 +9,12 @@ const blogSchema={
     featured_image:{type:String,require:true},
     status:{type:String,require:true,enum:['Draft','Published']},
    author_id:{type:String,require:true},
-   likes:{type:Number,default:0,}
+   likes:{type:Number,default:0,},
+   likers:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'User'
+
+   }]
 
 
 
