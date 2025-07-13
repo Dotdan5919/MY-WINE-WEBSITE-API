@@ -310,7 +310,7 @@ router.post('/update/:id', upload.array('images', 3), async (req, res) => {
   }
 });
 
-..
+
 
 module.exports=router;
 
