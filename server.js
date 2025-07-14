@@ -41,6 +41,12 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
+
+// 
+
+const {upload,storage,path}=require('./fileuploadhandler');
+
+
 const generateRefreshToken=()=>{
 
 
@@ -206,11 +212,12 @@ $or:[{email},{username}]
 });
 
 
-app.post('/api/login',async (req,res)=>{
+app.post('/api/login',upload.none(),async (req,res)=>{
 
 
     try{
     const {email,password}=req.body;
+    
 
     
 
